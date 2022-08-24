@@ -1,6 +1,5 @@
 
-(image)
-
+![candy-wrap-nerd-font](./candywrap.png)
 
 candy-wrap-nerd-fonts is an over engineered script to package up fonts from [the nerd fonts project](https://github.com/ryanoasis/nerd-fonts) as nupkg's to be installed via chocolatey.
 
@@ -19,43 +18,18 @@ My motivation was
 # creating packages with candy-wrap-nerd-fonts
 Open Powershell, clone this repository, cd into the directory and run the script `candy-wrap-nerd-fonts.ps1`. Below is an example of it creating two packages for agave and arimo.
 
-```
+```powershell
 # clone the repository
-PS>_ git clone REPO 
+PS>_ git clone https://github.com/pigeonlips/candy-wrap-nerd-fonts.git
 
 # run candy-wrap-nerd-Fonts
-PS>_ .\candy-wrap-nerd-fonts.ps1
-
-  ---------------------------------------------------------------------------------------------------------------------------------------- 
-  [candy-wrap-nerd-fonts.ps1] ~ getting config "C:\temp\fontwork\candy-wrap-nerd-fonts.yml"
-  ---------------------------------------------------------------------------------------------------------------------------------------- 
-  [candy-wrap-nerd-fonts.ps1] ~ ~ ~ reading config values "C:\temp\fontwork\candy-wrap-nerd-fonts.yml"
-  ---------------------------------------------------------------------------------------------------------------------------------------- 
-  [candy-wrap-nerd-fonts.ps1] ~ Creating package "nerd-fonts-agave"
-  ---------------------------------------------------------------------------------------------------------------------------------------- 
-  [candy-wrap-nerd-fonts.ps1] ~ ~ ~ Creating Files for Choco Package "C:\Users\user\AppData\Local\Temp\choco-nerd-fonts\nerd-fonts-agave"
-  [candy-wrap-nerd-fonts.ps1] ~ ~ ~ Writing Choco Nuspec "C:\Users\user\AppData\Local\Temp\choco-nerd-fonts\nerd-fonts-agave\nerd-fonts-agave.nuspec"
-  [candy-wrap-nerd-fonts.ps1] ~ ~ ~ getting https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/agave.zip
-  [candy-wrap-nerd-fonts.ps1] ~ ~ ~ unzipping C:\Users\user\AppData\Local\Temp\choco-nerd-fonts\nerd-fonts-agave\fonts\agave.zip
-  Chocolatey v1.1.0
-  Attempting to build package from 'nerd-fonts-agave.nuspec'.
-  Successfully created package 'C:\temp\fontwork\nerd-fonts-agave.2.1.0.nupkg'
-  ---------------------------------------------------------------------------------------------------------------------------------------- 
-  [candy-wrap-nerd-fonts.ps1] ~ Creating package "nerd-fonts-arimo"
-  ---------------------------------------------------------------------------------------------------------------------------------------- 
-  [candy-wrap-nerd-fonts.ps1] ~ ~ ~ Creating Files for Choco Package "C:\Users\user\AppData\Local\Temp\choco-nerd-fonts\nerd-fonts-arimo"
-  [candy-wrap-nerd-fonts.ps1] ~ ~ ~ Writing Choco Nuspec "C:\Users\user\AppData\Local\Temp\choco-nerd-fonts\nerd-fonts-arimo\nerd-fonts-arimo.nuspec"
-  [candy-wrap-nerd-fonts.ps1] ~ ~ ~ getting https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/arimo.zip
-  [candy-wrap-nerd-fonts.ps1] ~ ~ ~ unzipping C:\Users\user\AppData\Local\Temp\choco-nerd-fonts\nerd-fonts-arimo\fonts\arimo.zip
-  Chocolatey v1.1.0
-  Attempting to build package from 'nerd-fonts-arimo.nuspec'.
-  Successfully created package 'C:\temp\fontwork\nerd-fonts-arimo.2.1.0.nupkg'
+PS>_ .\candy-wrap-nerd-fonts\candy-wrap-nerd-fonts.ps1
 
 # packages are now in your current working folder
 PS>_ ls *.nupkg
 
 
-    Directory: C:\temp\fontwork
+    Directory: C:\temp\fonts
 
 
   Mode                 LastWriteTime         Length Name
@@ -64,31 +38,30 @@ PS>_ ls *.nupkg
   -a----         8/12/2022   4:21 PM        5731018 nerd-fonts-arimo.2.1.0.nupkg
 ```
 
-
-
 # how it works
 
 You run `candy-warp-nerd-fonts.ps1` and it should produce one or more packages of nerd-fonts for chocolatey. You can configure what it produces via a small yaml based config file.
 
-Requirements to run it are :  
+Requirements :  
 * Powershell (only ever tested on windows 10).
 * Chocolatey installed. The script calls `choco pack`.
 * [ recommended ] the Powershell-Yaml module to read the config file.
 
 ### dont nerd-fonts have there own scripts to package fonts for chocolatey ?
 
-Yes ! Yes they do - I would encourage you to [use it !](https://github.com/ryanoasis/nerd-fonts/tree/master/chocolatey). I just wanted something :
+Yes ! Yes they do - I would encourage you to [go use it!](https://github.com/ryanoasis/nerd-fonts/tree/master/chocolatey)
+
+I just wanted something :
 
 * Where I didn't need to clone the large repo.
-* Where I could just use powershell as I don't always want python on a machine.
+* Where I could just use PowerShell.
 * That could package up a collection of fonts into a single package from time to time.
 
 ### why use yaml ? If you used json you there wouldn't be any dependency's other than chocolatey !
 The Powershell-Yaml module is used to read the config. To be honest I'm still not sure why at this point the module is not included with powershell by default. I could have used json which would have removed the need to have this module, but I find yaml easier to read and work with. Without the Powershell-Yaml module, the script will continue to work but sane default value are used and you will be unable to change the behavior via the config.
 
 ### the package has the fonts inside. why not just use a command to download it like everyone else ?
-Personal preference I guess. I like everything needed in the package. If links change or whatever I can trust the package remains as it was at time of creation. 
-
+Personal preference I guess. I like everything needed in the package. If links change or whatever I can trust the package remains as it was at time of creation.
 
 # candy-wrap-nerd-fonts configuration
 
@@ -98,22 +71,22 @@ If an item is not in the config, the script will provide a default if its need.
 ## candywrap section
 Configuration to control the behavior of the candy-wrap-nerd-fonts script.
 
-```
+```yml
 candywrap:
   packpath:                     # defaults to $env:temp\choco.metadata.id
   packageperfont: false         # defaults to true, the fontname is appended to the package name
   windowscompatibleonly: true   # defaults to false
 ```
 
-* packpath : this is the path on disk that is used to create all the files needed to create the chocolatey package. If omitted, it will default to the windows temp directory + the name of the chocolatey package id
-* packageperfont: more than one font can be specified in the config under the nerd-fonts section. If packageperfont is true it will create a separate chocolatey package per font. The font name will be appended to the chocolatey package id.
-* windowcompatibleonly : fonts inside the zip files downloaded from nerd-fonts include files marked with "Windows Compatible". If this setting is true, the script will only package these fonts.
+* `packpath` : this is the path on disk that is used to create all the files needed to create the chocolatey package. If omitted, it will default to the windows temp directory + the name of the chocolatey package id
+* `packageperfont`: more than one font can be specified in the config under the nerd-fonts section. If packageperfont is true it will create a separate chocolatey package per font. The font name will be appended to the chocolatey package id.
+* `windowcompatibleonly` : fonts inside the zip files downloaded from nerd-fonts include files marked with "Windows Compatible". If this setting is true, the script will only package these fonts.
 
-**Note** ~ You could set packageperfont to false if you want to, say, package up a handful of your favourite ones into a single package.
+> **Note** ~ You could set packageperfont to false if you want to, say, package up a handful of your favourite ones into a single package.
 
 ## choco section
 Configuration to control the behavior of chocolatey when packaging. Heres an example:
-```
+```yml
 choco:
   metadata:
     id:                                 # defaults to "nerd-fonts"
@@ -159,7 +132,7 @@ Again any key value pair can be added. Defaults are shown in the example above. 
 ## nerdfont section
 Configuration to control the behaviour of how candy-wrap-nerd-fonts interacts with nerd-fonts.
 
-```
+```yml
 nerdfont:
   giturl: # defaults to "https://github.com/ryanoasis/nerd-fonts/"
   gittag: # defaults to the most current tag as time of writting , "v2.1.0"
@@ -174,12 +147,12 @@ nerdfont:
 * `gittag` : the release tag that should be used to download the zipped up fonts.
 * `fonts` : an array of font file name to pull from nerd-fonts. You can find these listed on github under the releases page for nerd-fonts.
 
-**Note** if `packageperfont` is true, then the font file name (minus the .zip part) will be appended to the chocolatey package id. for example "-agave".
+> **Note** if `packageperfont` is true, then the font file name (minus the .zip part) will be appended to the chocolatey package id. for example "-agave".
 
-**Note** - if `fonts` is blank, then the script will try to get a full list of fonts from the release page and draw a dialogue box (using Out-GridView) so you can select the ones you want.
+> **Note** - if `fonts` is blank, then the script will try to get a full list of fonts from the release page and draw a dialogue box (using Out-GridView) so you can select the ones you want.
 
-# credits
+# credits !
 
-* all the fine people who made the fonts ! 
-* ryanoasis and all the fantastic work from people contributing nerd fonts ! 
-* chocolatey ! 
+* all the fine people who made the fonts !
+* ryanoasis and all the fantastic work from people contributing to nerd fonts !
+* chocolatey !
