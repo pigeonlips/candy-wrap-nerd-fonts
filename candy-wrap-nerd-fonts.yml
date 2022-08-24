@@ -1,0 +1,88 @@
+candywrap:
+#  packpath:                    # defaults to $env:temp\choco.metadata.id
+  packageperfont: true          # defaults true, the fontname is appended to the package name
+  windowscompatibleonly: true   # defaults to false
+
+choco:
+  metadata:
+#    id:                                 # defaults to "nerd-fonts"
+#    version:                            # defaults to version of nerd-fonts used with all letters stripped [a-z] out 
+    title:                               # defaults to id 
+    authors: "Ryan L McIntyre"           # defaults to current windows user
+    requireLicenseAcceptance: "true"     # default is false
+    owners: "ryanoasis"
+    packageSourceUrl: "https://github.com/ryanoasis/nerd-fonts"
+    projectUrl: "https://nerdfonts.com/"
+    iconUrl: "https://imgur.com/pEDFEje"
+    licenseUrl: "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/LICENSE"
+    projectSourceUrl: "https://github.com/ryanoasis/nerd-fonts"
+    docsUrl: "https://github.com/ryanoasis/nerd-fonts/wiki"
+    bugTrackerUrl: "https://github.com/ryanoasis/nerd-fonts/issues"
+    tags: "hasklig hasklug nerd-fonts fonts ligatures coding-fonts"
+    summary: |-
+      Iconic font aggregator, collection, and patcher. 40+ patched fonts, over 3,600
+      glyph/icons, includes popular collections such as Font Awesome &amp; fonts such as Hack.
+    description: |-
+      Nerd Fonts takes popular programming fonts and adds a bunch of Glyphs.
+      There is also a font patcher available if your desired font isn't already patched.
+      For more high level information see the wiki.
+  files:
+    - src: "tools\\**" 
+      target: "tools"
+    - src: "fonts\\**" 
+      target: "fonts"
+
+nerdfont:
+  giturl: "https://github.com/ryanoasis/nerd-fonts/"
+  gittag: "v2.1.0"
+  baseUrl:                 # default "releases/download"
+  fonts:                   # Name of font file as it appears as asset in link above. If not provided the script will provide a gridbox 
+#    - '3270.zip'
+#    - 'agave.zip'
+#    - 'AnonymousPro.zip'
+#    - 'arimo.zip'
+#    - 'AurulentSansMono.zip'
+#    - 'BigBlueTerminal.zip'
+#    - 'BitstreamVeraSansMono.zip'
+#    - 'CascadiaCode.zip'
+#    - 'CodeNewRoman.zip'
+#    - 'Cousine.zip'
+#    - 'DejaVuSansMono.zip'
+#    - 'DroidSansMono.zip'
+#    - 'FantasqueSansMono.zip'
+#    - 'FiraCode.zip'
+#    - 'FiraMono.zip'
+#    - 'Go-Mono.zip'
+#    - 'Gohu.zip'
+#    - 'Hack.zip'
+#    - 'Hasklig.zip'
+#    - 'HeavyData.zip'
+#    - 'Hermit.zip'
+#    - 'iA-Writer.zip'
+#    - 'IBMPlexMono.zip'
+#    - 'Inconsolata.zip'
+#    - 'InconsolataGo.zip'
+#    - 'InconsolataLGC.zip'
+#    - 'Iosevka.zip'
+#    - 'JetBrainsMono.zip'
+#    - 'Lekton.zip'
+#    - 'LiberationMono.zip'
+#    - 'Meslo.zip'
+#    - 'Monofur.zip'
+#    - 'Monoid.zip'
+#    - 'Mononoki.zip'
+#    - 'MPlus.zip'
+#    - 'Noto.zip'
+#    - 'OpenDyslexic.zip'
+#    - 'Overpass.zip'
+#    - 'ProFont.zip'
+#    - 'ProggyClean.zip'
+#    - 'RobotoMono.zip'
+#    - 'ShareTechMono.zip'
+#    - 'SourceCodePro.zip'
+#    - 'SpaceMono.zip'
+#    - 'Terminus.zip'
+#    - 'Tinos.zip'
+#    - 'Ubuntu.zip'
+#    - 'UbuntuMono.zip'
+#    - 'VictorMono.zip'
