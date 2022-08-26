@@ -140,7 +140,12 @@ function Add-ChocoFonts {
       -Path "$Destination\$_" `
       -DestinationPath $Destination `
       -Force
- 
+
+    # TODO : we should ls for all files extracted and move then to 
+    #        destination. One of the zips has the fonts in a sub 
+    #        folder for example, we want them loose in the 
+    #        destination 
+
     Remove-Item -Path "$Destination\$_"
 
     If ( $WindowsCompatibleOnly ) { 
