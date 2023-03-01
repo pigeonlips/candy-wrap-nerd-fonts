@@ -1,4 +1,6 @@
-# TODO : param for version ? 
+# TODO : get version and download assets via github api
+#        see https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases
+#        Invoke-RestMethod -Method Get 'https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest'
 # TODO : add param to test
 #        this should:
 #        * insure font is not installed
