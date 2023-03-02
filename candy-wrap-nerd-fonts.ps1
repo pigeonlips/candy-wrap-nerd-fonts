@@ -1,6 +1,3 @@
-# TODO : get version and download assets via github api
-#        see https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases
-#        Invoke-RestMethod -Method Get 'https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest'
 # TODO : add param to test
 #        this should:
 #        * insure font is not installed
@@ -9,11 +6,14 @@
 #        * check to see if font is installed (c:\windows\fonts or registry)
 #        * uninstall package 
 #        * insure font is uninstalled (c:\windows\fonts or registry)
-# TODO : put it in a repo and push it
 # TODO : include custom fonts folder, or full path to the font ?
 #        * could check to see if the font exists on disk
 #        * if so copy it
 #        * if not download it
+# DONE : get version and download assets via github api
+#        see https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases
+#        Invoke-RestMethod -Method Get 'https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest'
+# DONE : put it in a repo and push it
 
 
 $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -21,13 +21,13 @@ $ScriptName = Split-Path $MyInvocation.MyCommand.Path -Leaf
 $ConfigFile = "$scriptPath\candy-wrap-nerd-fonts.yml"
 
 # sets up a staging folder for chocolatey to pack
-function New-ChocoPackage { 
+Function New-ChocoPackage { 
   Param(
     [Parameter()][string]$path,
     [Parameter()][String]$name
   )
 
-  Write-Host "[$ScriptName] ~ ~ ~ Creating Files for Choco Package ""$path\$name"""
+  Write-Host "[$ScriptName] ~~> creating files for choco package ""$path\$name"""
 
   If ( Test-Path "$path\$name" ) {
    
@@ -56,14 +56,14 @@ function New-ChocoPackage {
 }
 
 # writes the chocolatey nuspec file
-function Write-ChocoSpec { 
+Function Write-ChocoSpec { 
   Param(
     [Parameter()][String]$SpecFile,
     [Parameter()][PSCustomObject]$Config
 
   )
   
-  Write-Host "[$ScriptName] ~ ~ ~ Writing Choco Nuspec ""$Specfile"""
+  Write-Host "[$ScriptName] ~~> writing choco nuspec ""$Specfile"""
   [XML]$ChocoNuspec = '<?xml version="1.0" encoding="utf-8"?><package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd"></package>'
   $package  = $ChocoNuspec.ChildNodes | Where-Object { $_.LocalName -eq 'package' }
 
@@ -97,49 +97,67 @@ function Write-ChocoSpec {
 
   }
 
+  Write-Debug "$($Config | ConvertTo-Yaml)"
   $ChocoNuspec.Save( $SpecFile )
 
 }
 
-# gets a list of font assets available for a give git tag
-function Request-NerdFonts {
+# gets a list of font assets available for a given git tag
+Function Resolve-NerdFont {
   param(
-    [Parameter()][String]$GitUrl,
-    [Parameter()][String]$GitTag
+    [Parameter()][PSCustomObject]$Config
   )
 
-  Write-Host "[$ScriptName] ~ ~ ~ Requesting Nerd Fonts @ $GitTag"
-  $url         = $GitUrl + "releases/tag/" + $GitTag
-  $WebResponse = Invoke-WebRequest $url -UseBasicParsing
-  $fonts       = Split-Path -leaf ($webResponse.Links | Where-Object { $_ -match '.zip' }).href
-  $fonts       = $fonts | Where-Object { $_ -ne "$GitTag.zip" } | Out-GridView -PassThru
+  # build up the url for githib api call 
+  $UrlParts      = @()
+  $UrlParts     += "https://api.github.com"
+  $UrlParts     += "repos"
+  $UrlParts     += $Config.gitrepo
+  $UrlParts     += "releases"
+  $UrlParts     += $Config.gittag 
+  $url           = ($UrlParts | ? { $_ } | % { $_.trim('/') } | ? { $_ } ) -join '/'
+  
+  
+  # get data from github
+  Write-Host     "[$ScriptName] ~~> resolving nerd fonts from ""$url"""
+  $GitRelease    = Invoke-RestMethod -Method GET -Uri $url
+  $Config.gittag = $GitRelease.name -replace '[a-zA-Z]', ''
+  $GitAssets     = $GitRelease.Assets | Select-Object name, size, browser_download_url
 
-  Return $fonts
+  If ( $Config.fonts.count -eq 0 ) { 
+
+    # no fonts given from config, let the user choose fonts
+    $Config.fonts = $GitAssets  | Out-GridView -Title "select nerd fonts [$($GitRelease.name)] to package" -PassThru
+
+  } Else { 
+
+    # filter github data to match fonts in config
+    $Config.fonts = $GitAssets | ? { $_.name -in $Config.fonts }
+
+  }
+
+  Return $Config 
 
 }
 
 # downloads font assets from github and un zips them
-function Add-ChocoFonts {
+Function Add-ChocoFonts {
   param(
-    [Parameter()][String[]]$Fonts,
+    [Parameter()][PSCustomObject[]]$Fonts,
     [Parameter()][String]$Destination,
-    [Parameter()][String]$GitUrl,
-    [Parameter()][String]$GitTag,
     [Parameter()][Switch]$WindowsCompatibleOnly
   )
 
-  $url = $GitUrl + "releases/download/" + $GitTag 
-
   $fonts | Foreach-Object {
-    Write-Host "[$ScriptName] ~ ~ ~ getting $url/$_"
+    Write-Host "[$ScriptName] ~~> downloading $($_.browser_download_url)"
     Start-BitsTransfer `
-      -Source  "$url/$_" `
-      -Destination "$Destination\$_"
+      -Source  $($_.browser_download_url) `
+      -Destination "$Destination\$($_.name)"
 
-    Write-Host "[$scriptName] ~ ~ ~ unzipping $Destination\$_"
+    Write-Host "[$scriptName] ~~> unzipping $Destination\$($_.name)"
 
     Expand-Archive `
-      -Path "$Destination\$_" `
+      -Path "$Destination\$($_.name)" `
       -DestinationPath $Destination `
       -Force
 
@@ -148,11 +166,17 @@ function Add-ChocoFonts {
     #        folder for example, we want them loose in the 
     #        destination 
 
-    Remove-Item -Path "$Destination\$_"
+    Remove-Item -Path "$Destination\$($_.name)"
 
     If ( $WindowsCompatibleOnly ) { 
 
-      Get-ChildItem $Destination | Where-Object { $_ -notmatch 'Windows Compatible' } | Remove-Item
+      # TODO : what happens if we dont have any 'Windows Compatible'? 
+      #        we would end up with an empty package, which theres no point in creating
+      #        we should warn and move on to the next one! 
+      
+      # TODO : not great hard coding the search string of 'Windows Compatible' here. 
+      #        maybe move this to the config file
+      Get-ChildItem $Destination | Where-Object { $_ -notmatch 'Windows Compatible' } | Remove-Item -Recurse
 
     }
 
@@ -187,7 +211,9 @@ If ( Get-Command ConvertFrom-Yaml -ErrorAction SilentlyContinue  ) {
   Pause
   $ChocoConfig = @{ 
     candywrap  = @{}
-    nerdfont   = @{}
+    nerdfont   = @{
+      fonts = @()
+    }
     choco      = @{
       metadata  = @{}
       files     = @()
@@ -199,16 +225,30 @@ If ( Get-Command ConvertFrom-Yaml -ErrorAction SilentlyContinue  ) {
 # -- -----------------------------------------------------------------------------------------------------------------------------------------
 # --                                                                                                               set up defaults for config
 
-Write-Host "[$ScriptName] ~ ~ ~ reading config values ""$ConfigFile"""
-
+Write-Host "[$ScriptName] ~~> reading config values ""$ConfigFile"""
 
 # Set up defaults for a bare minimum run through the script.
 If ( $ChocoConfig.candywrap.packageperfont -eq $null  ) { $ChocoConfig.candywrap.packageperfont = $true } 
 If ( -not $ChocoConfig.candywrap.packpath             ) { $ChocoConfig.candywrap.packpath  = "$env:temp\choco-nerd-fonts" }
-If ( -not $ChocoConfig.nerdfont.giturl                ) { $ChocoConfig.nerdfont.giturl = "https://github.com/ryanoasis/nerd-fonts/" }
-If ( -not $ChocoConfig.nerdfont.gittag                ) { $ChocoConfig.nerdfont.gittag = "v2.1.0" }
+If ( -not $ChocoConfig.nerdfont.gitrepo               ) { $ChocoConfig.nerdfont.gitrepo = "ryanoasis/nerd-fonts" }
+If ( -not $ChocoConfig.nerdfont.gittag                ) { $ChocoConfig.nerdfont.gittag = "latest" }
+
+$ChocoConfig.nerdfont = Resolve-NerdFont -Config $ChocoConfig.nerdfont 
+
+If ( ($ChocoConfig.nerdfont.fonts).count -eq 0 ) {
+
+  Write-Warning "We couldnt resolve nerdfonts. Maybe you canceled the selection. If your specifing fonts in your config you could:"
+  Write-Warning ""
+  Write-Warning " -> check your spelling, font names must be as they appear in the release page on github including .zip"
+  Write-Warning " -> leave the font section in your config blank. This will make the script show a gridbox for you to choose from"
+  Write-Warning ""
+  Write-Warning "no fonts found, nothing to do! Check your config!"
+  Return
+
+} 
+
 If ( -not $ChocoConfig.choco.metadata.id              ) { $ChocoConfig.choco.metadata.id = "nerd-fonts" }
-If ( -not $ChocoConfig.choco.metadata.version         ) { $ChocoConfig.choco.metadata.version = ( $ChocoConfig.nerdfont.gittag -replace '[a-zA-Z]' , '' ) }
+If ( -not $ChocoConfig.choco.metadata.version         ) { $ChocoConfig.choco.metadata.version = $ChocoConfig.nerdfont.gittag }
 If ( -not $ChocoConfig.choco.metadata.title           ) { $ChocoConfig.choco.metadata.title = $ChocoConfig.choco.metadata.id }
 If ( -not $ChocoConfig.choco.metadata.authors         ) { $ChocoConfig.choco.metadata.authors = $env:USERNAME   }
 If ( -not $ChocoConfig.choco.metadata.description     ) { $ChocoConfig.choco.metadata.description = $chococonfig.choco.metadata.title   }
@@ -219,22 +259,9 @@ If ( $ChocoConfig.choco.files.count -lt 1             ) {
   )
 }
 
-# If not fonts are given, try and work out what there is 
-If ( ( -not $ChocoConfig.nerdfont.fonts ) -or ( $ChocoConfig.nerdfont.fonts.Count -lt 1 ) ) {
 
-  Write-Warning "No fonts in config : will attempt to look up what's available for $($ChocoConfig.nerdfont.gittag)"
-  
-  $ChocoConfig.nerdfont.fonts = Request-NerdFonts -GitUrl $ChocoConfig.nerdfont.gitUrl -GitTag $ChocoConfig.nerdfont.gittag
 
-  If ( $ChocoConfig.nerdfont.fonts.count -lt 1 ) {
-
-    Write-Warning "no fonts selected - nothing to do"
-    Return
-
-  } 
-
-}
-
+#Return $ChocoConfig.nerdfont.fonts
 # -- -----------------------------------------------------------------------------------------------------------------------------------------
 # --                                                                                                                    create choco packages
 
@@ -245,12 +272,12 @@ If ( $ChocoConfig.candywrap.packageperfont -eq $true ) {
 
   $ChocoConfig.nerdfont.fonts | Foreach-Object {
 
-    $FontName = $_ -Replace '\.zip$' , ''
+    $FontName = $_.name -Replace '\.zip$' , ''
     $ChocoConfig.choco.metadata.title = "$ChocoTitle-$Fontname"
     $ChocoConfig.choco.metadata.id = "$ChocoId-$Fontname"
 
     If ($Host.UI.RawUI.WindowSize) { Write-Host ("-" * $($Host.UI.RawUI.WindowSize.Width -1) )  -ForegroundColor Gray }
-    Write-Host "[$ScriptName] ~ Creating package ""$($ChocoConfig.choco.metadata.id)"""
+    Write-Host "[$ScriptName] ~ creating package ""$($ChocoConfig.choco.metadata.id)"""
     If ($Host.UI.RawUI.WindowSize) { Write-Host ("-" * $($Host.UI.RawUI.WindowSize.Width -1) )  -ForegroundColor Gray }
 
     $package = New-ChocoPackage `
@@ -264,8 +291,6 @@ If ( $ChocoConfig.candywrap.packageperfont -eq $true ) {
     Add-ChocoFonts `
       -Fonts $_ `
       -Destination ( Join-Path $Package.fullname "fonts" ) `
-      -GitUrl $ChocoConfig.nerdfont.giturl `
-      -GitTag $ChocoConfig.nerdfont.gittag `
       -WindowsCompatibleOnly:$ChocoConfig.candywrap.windowscompatibleonly
 
     Choco pack  "$($Package.fullname)\$($ChocoConfig.choco.metadata.id).nuspec" 
@@ -275,7 +300,7 @@ If ( $ChocoConfig.candywrap.packageperfont -eq $true ) {
 } Else {
 
   If ($Host.UI.RawUI.WindowSize) { Write-Host ("-" * $($Host.UI.RawUI.WindowSize.Width -1) )  -ForegroundColor Gray }
-  Write-Host "[$ScriptName] ~ Creating package ""$($ChocoConfig.choco.metadata.id)"""
+  Write-Host "[$ScriptName] ~ creating package ""$($ChocoConfig.choco.metadata.id)"""
   If ($Host.UI.RawUI.WindowSize) { Write-Host ("-" * $($Host.UI.RawUI.WindowSize.Width -1) )  -ForegroundColor Gray }
 
   $package = New-ChocoPackage `
@@ -289,8 +314,6 @@ If ( $ChocoConfig.candywrap.packageperfont -eq $true ) {
   Add-ChocoFonts `
     -Fonts $ChocoConfig.nerdfont.fonts `
     -Destination ( Join-Path $Package.fullname "fonts" ) `
-    -GitUrl $ChocoConfig.nerdfont.giturl `
-    -GitTag $ChocoConfig.nerdfont.gittag `
     -WindowsCompatibleOnly:$ChocoConfig.candywrap.windowscompatibleonly
 
   Choco pack  "$($Package.fullname)\$($ChocoConfig.choco.metadata.id).nuspec" 
