@@ -1,13 +1,13 @@
 candywrap:
-#  packpath:                    # defaults to $env:temp\choco.metadata.id
-  packageperfont: true          # defaults true, the fontname is appended to the package name
+#  packpath:                    # defaults to $env:temp\<choco.metadata.id>
+#  packageperfont: false        # defaults true, the fontname is appended to the package name
   windowscompatibleonly: true   # defaults to false
 
 choco:
   metadata:
 #    id:                                 # defaults to "nerd-fonts"
 #    version:                            # defaults to version of nerd-fonts used with all letters stripped [a-z] out 
-    title:                               # defaults to id 
+#    title:                              # defaults to id 
     authors: "Ryan L McIntyre"           # defaults to current windows user
     requireLicenseAcceptance: "true"     # default is false
     owners: "ryanoasis"
@@ -33,10 +33,9 @@ choco:
       target: "fonts"
 
 nerdfont:
-  giturl: "https://github.com/ryanoasis/nerd-fonts/"
-  gittag: "v2.1.0"
-  baseUrl:                 # default "releases/download"
-  fonts:                   # Name of font file as it appears as asset in link above. If not provided the script will provide a gridbox 
+  gitrepo: "ryanoasis/nerd-fonts" # defaults to "ryanoasis/nerd-fonts"
+  gittag: "latest"                # defaults to latest                 
+  fonts:                          # name of font file as it appears as asset in github. If not provided the script will provide a gridbox to select from 
 #    - '3270.zip'
 #    - 'agave.zip'
 #    - 'AnonymousPro.zip'

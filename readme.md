@@ -84,6 +84,28 @@ candywrap:
 
 > **Note** ~ You could set packageperfont to false if you want to, say, package up a handful of your favourite ones into a single package.
 
+## nerdfont section
+Configuration to control the behaviour of how candy-wrap-nerd-fonts interacts with nerd-fonts.
+
+```yml
+nerdfont:
+  gitrepo: # defaults to "ryanoasis/nerd-fonts"
+  gittag:  # defaults to "latest""
+  fonts:   # Name of font file as it appears as asset under the nerdfont release page. If not provided the script will provide a gridbox
+    - '3270.zip'
+    - 'agave.zip'
+    - 'AnonymousPro.zip'
+    - 'Arimo.zip'
+```
+
+* `giturl` : base github url for the nerd-fonts repo. You could change I guess if you want to point it at a fork etc.
+* `gittag` : the release tag that should be used to download the zipped up fonts.
+* `fonts` : an array of font file name to pull from nerd-fonts. You can find these listed on github under the releases page for nerd-fonts.
+
+> **Note** if `packageperfont` is true, then the font file name (minus the .zip part) will be appended to the chocolatey package id. for example "-agave".
+
+> **Note** - if `fonts` is blank, then the script will try to get a full list of fonts from the release page and draw a dialogue box (using Out-GridView) so you can select the ones you want.
+
 ## choco section
 Configuration to control the behavior of chocolatey when packaging. Heres an example:
 ```yml
@@ -128,28 +150,6 @@ Any key value pair works here, and these are injected in to the metadata section
 
 ### files subsection
 Again any key value pair can be added. Defaults are shown in the example above. These are used to control what files are added to the package. Unless you are modifying how and what is packaged these shouldn't need to change. If you change this section you would likely need to change the candy-wrap-nerd-fonts script too.  
-
-## nerdfont section
-Configuration to control the behaviour of how candy-wrap-nerd-fonts interacts with nerd-fonts.
-
-```yml
-nerdfont:
-  giturl: # defaults to "https://github.com/ryanoasis/nerd-fonts/"
-  gittag: # defaults to the most current tag as time of writting , "v2.1.0"
-  fonts:  # Name of font file as it appears as asset under the nerdfont release page. If not provided the script will provide a gridbox
-    - '3270.zip'
-    - 'agave.zip'
-    - 'AnonymousPro.zip'
-    - 'Arimo.zip'
-```
-
-* `giturl` : base github url for the nerd-fonts repo. You could change I guess if you want to point it at a fork etc.
-* `gittag` : the release tag that should be used to download the zipped up fonts.
-* `fonts` : an array of font file name to pull from nerd-fonts. You can find these listed on github under the releases page for nerd-fonts.
-
-> **Note** if `packageperfont` is true, then the font file name (minus the .zip part) will be appended to the chocolatey package id. for example "-agave".
-
-> **Note** - if `fonts` is blank, then the script will try to get a full list of fonts from the release page and draw a dialogue box (using Out-GridView) so you can select the ones you want.
 
 # credits !
 
