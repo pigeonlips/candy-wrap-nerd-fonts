@@ -3,9 +3,10 @@ $FontPath   = Join-Path (Split-Path $ScriptPath -Parent) "fonts"
 
 Get-ChildItem $FontPath\* | Foreach-Object {
 
-  $uninstalled = Uninstall-ChocolateyFont $_.name
+  #$uninstalled = Uninstall-ChocolateyFont $_.name
+  $uninstalled = & $ScriptPath\remove-font.ps1 -file "$($_.name)"
 
-  If ( $uninstalled -eq 0 ) { 
+  If ( $LASTEXITCODE -eq 0 ) { 
 
     Write-Host "uninstalled ""$($_.basename)"""
 
@@ -16,7 +17,3 @@ Get-ChildItem $FontPath\* | Foreach-Object {
   }
 
 }
-
-#Get-ChildItem $FontPath | Foreach-Object { 
-#  & $ScriptPath\remove-font.ps1 -file "$($_.name)"
-#}

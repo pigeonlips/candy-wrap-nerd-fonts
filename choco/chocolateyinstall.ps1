@@ -3,9 +3,10 @@ $FontPath   = Join-Path (Split-Path $ScriptPath -Parent) "fonts"
 
 Get-ChildItem $FontPath\* | Foreach-Object {
 
-  $Installed = Install-ChocolateyFont $_.fullname
+  #$Installed = Install-ChocolateyFont $_.fullname
+  & $ScriptPath\Add-Font.ps1 -Path "$($_.fullname)"
  
-  If ( $Installed -eq 0 ) { 
+  If ( $LASTEXITCODE -eq 0 ) { 
 
     Write-Host "Installed $($_.basename)"
 
