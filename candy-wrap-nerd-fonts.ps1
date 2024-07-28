@@ -122,7 +122,8 @@ Function Resolve-NerdFont {
   Write-Host     "[$ScriptName] ~~> resolving nerd fonts from ""$url"""
   $GitRelease    = Invoke-RestMethod -Method GET -Uri $url
   $Config.nerdfont.gittag = $GitRelease.name -replace '[a-zA-Z]', ''
-  $GitAssets     = $GitRelease.Assets | Select-Object name, size, browser_download_url
+  # NOTE : only support .zip
+  $GitAssets     = $GitRelease.Assets | Where-Object { $_.name -match 'zip$' } | Select-Object name, size, browser_download_url
   If ( ( $Config.nerdfont.fonts.count -eq 0 ) -and ($Config.candywrap.interactive) ) { 
     # no fonts given from config, let the user choose fonts
     Write-Host "[$ScriptName] ~ Waiting for user to select fonts"
