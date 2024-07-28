@@ -24,7 +24,8 @@ jobs:
 
         run: |
           get-command choco
-          Install-Module -Name Powershell-Yaml
-          . candy-wrap-nerd-fonts.ps1
+          Install-Module -Name Powershell-Yaml -Confirm:$False -Force
+          ls
+          . ./candy-wrap-nerd-fonts.ps1
           ls 
           
