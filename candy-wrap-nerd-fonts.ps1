@@ -112,30 +112,32 @@ Function Resolve-NerdFont {
   $UrlParts      = @()
   $UrlParts     += "https://api.github.com"
   $UrlParts     += "repos"
-  $UrlParts     += $Config.gitrepo
+  $UrlParts     += $Config.nerdfont.gitrepo
   $UrlParts     += "releases"
-  $UrlParts     += $Config.gittag 
+  $UrlParts     += $Config.nerdfont.gittag 
   $url           = ($UrlParts | ? { $_ } | % { $_.trim('/') } | ? { $_ } ) -join '/'
   
   
   # get data from github
   Write-Host     "[$ScriptName] ~~> resolving nerd fonts from ""$url"""
   $GitRelease    = Invoke-RestMethod -Method GET -Uri $url
-  $Config.gittag = $GitRelease.name -replace '[a-zA-Z]', ''
+  $Config.nerdfont.gittag = $GitRelease.name -replace '[a-zA-Z]', ''
   $GitAssets     = $GitRelease.Assets | Select-Object name, size, browser_download_url
-
-  If ( $Config.fonts.count -eq 0 ) { 
-
+  If ( ( $Config.nerdfont.fonts.count -eq 0 ) -and ($Config.candywrap.interactive) ) { 
     # no fonts given from config, let the user choose fonts
-    $Config.fonts = $GitAssets  | Out-GridView -Title "select nerd fonts [$($GitRelease.name)] to package" -PassThru
+    Write-Host "[$ScriptName] ~ Waiting for user to select fonts"
+    $Config.nerdfont.fonts = $GitAssets  | Out-GridView -Title "select nerd fonts [$($GitRelease.name)] to package" -PassThru
+    Return $Config 
+  } 
 
-  } Else { 
-
-    # filter github data to match fonts in config
-    $Config.fonts = $GitAssets | ? { $_.name -in $Config.fonts }
-
+  If ( $Config.nerdfont.fonts.count -eq 0 ) {
+    Write-host "[$ScriptName] ~ no fonts in config. Assuming all fonts should be packaged"
+    $Config.nerdfont.fonts = $GitAssets
+    Return $Config
   }
 
+  # filter github data to match fonts in config
+  $Config.nerdfont.fonts = $GitAssets | ? { $_.name -in $Config.fonts }
   Return $Config 
 
 }
@@ -229,11 +231,12 @@ Write-Host "[$ScriptName] ~~> reading config values ""$ConfigFile"""
 
 # Set up defaults for a bare minimum run through the script.
 If ( $ChocoConfig.candywrap.packageperfont -eq $null  ) { $ChocoConfig.candywrap.packageperfont = $true } 
+If ( $ChocoConfig.candywrap.interactive    -eq $null  ) { $ChocoConfig.candywrap.interactive = $true } 
 If ( -not $ChocoConfig.candywrap.packpath             ) { $ChocoConfig.candywrap.packpath  = "$env:temp\choco-nerd-fonts" }
 If ( -not $ChocoConfig.nerdfont.gitrepo               ) { $ChocoConfig.nerdfont.gitrepo = "ryanoasis/nerd-fonts" }
 If ( -not $ChocoConfig.nerdfont.gittag                ) { $ChocoConfig.nerdfont.gittag = "latest" }
 
-$ChocoConfig.nerdfont = Resolve-NerdFont -Config $ChocoConfig.nerdfont 
+$ChocoConfigt = Resolve-NerdFont -Config $ChocoConfig
 
 If ( ($ChocoConfig.nerdfont.fonts).count -eq 0 ) {
 
