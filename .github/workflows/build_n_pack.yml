@@ -3,29 +3,24 @@ name: build and pack
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: windows-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: setup environment
-
+      - name: pre checks
         run: |
-          get-command choco
+          Get-Command choco
           Install-Module -Name Powershell-Yaml -Confirm:$False -Force
-          ls
-          . ./candy-wrap-nerd-fonts.ps1
-          ls 
           
+      - name: create choco package
+        run: | 
+          . ./candy-wrap-nerd-fonts.ps1 
+          
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "nerd-fonts.nupkg"
+          path: "*.nupkg"
