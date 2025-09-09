@@ -1,7 +1,7 @@
 candywrap:
 #  packpath:                    # defaults to $env:temp\<choco.metadata.id>
   packageperfont: false         # defaults false, when true fonts are packaged individually.
-  windowscompatibleonly: true   # defaults to false
+  #windowscompatibleonly: true   # defaults to false
   interactive: false            # defaults to true. Set this to true to be prompted which fonts to package when nerdfont.fonts is empty
 choco:
   metadata:
