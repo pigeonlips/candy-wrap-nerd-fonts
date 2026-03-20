@@ -176,7 +176,8 @@ Function Add-ChocoFonts {
       
       # TODO : not great hard coding the search string of 'Windows Compatible' here. 
       #        maybe move this to the config file
-      Get-ChildItem $Destination | Where-Object { $_ -notmatch 'Windows Compatible' } | Remove-Item -Recurse
+      # NOTE : as of version 3.x nerd fonts no longer contain Windows Compatible in the file name so this wipes everything ! 
+      #Get-ChildItem $Destination | Where-Object { $_ -notmatch 'Windows Compatible' } | Remove-Item -Recurse
 
     }
 

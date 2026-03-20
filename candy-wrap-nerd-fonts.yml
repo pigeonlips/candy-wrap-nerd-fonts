@@ -1,6 +1,6 @@
 candywrap:
 #  packpath:                    # defaults to $env:temp\<choco.metadata.id>
-#  packageperfont: false        # defaults true, the fontname is appended to the package name
+  packageperfont: false        # defaults true, the fontname is appended to the package name
   windowscompatibleonly: true   # defaults to false
 
 choco:
