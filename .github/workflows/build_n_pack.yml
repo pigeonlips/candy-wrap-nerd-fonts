@@ -1,0 +1,26 @@
+
+name: build and pack
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: pre checks
+        run: |
+          Get-Command choco
+          Install-Module -Name Powershell-Yaml -Confirm:$False -Force
+          
+      - name: create choco package
+        run: | 
+          . ./candy-wrap-nerd-fonts.ps1 
+          
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "nerd-fonts.nupkg"
+          path: "*.nupkg"

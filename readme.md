@@ -69,13 +69,14 @@ Configuration is held in the candy-wrap-nerd-fonts.yml file. Its broken into 3 s
 If an item is not in the config, the script will provide a default if its need.
 
 ## candywrap section
-Configuration to control the behavior of the candy-wrap-nerd-fonts script.
+Configuration to control the behaviour of the candy-wrap-nerd-fonts script.
 
 ```yml
 candywrap:
-  packpath:                     # defaults to $env:temp\choco.metadata.id
-  packageperfont: false         # defaults to true, the fontname is appended to the package name
+  packpath:                     # defaults to $env:temp\<choco.metadata.id>
+  packageperfont: false         # defaults false, when true fonts are packaged individually.
   windowscompatibleonly: true   # defaults to false
+  interactive: false            # defaults to true. Will be prompted which fonts to package when nerdfont.fonts is empty
 ```
 
 * `packpath` : this is the path on disk that is used to create all the files needed to create the chocolatey package. If omitted, it will default to the windows temp directory + the name of the chocolatey package id
